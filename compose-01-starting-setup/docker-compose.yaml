@@ -1,0 +1,45 @@
+# version: "3.8"
+services:
+  mongodb:
+    image: 'mongo'
+    volumes:
+      - data:/data/db
+    # environment:
+    #   - MONGO_INITDB_ROOT_USERNAME=alban
+    #   - MONGO_INITDB_ROOT_PASSWORD=secret # use this method if you have not specified and env file
+    env_file:
+      - ./env/mongo.env
+
+
+  backend:
+    # build: ./backend you can specify to docker compose as such where to find your dockerfile to be built, 
+    # or you can use the following syntax
+    build:
+      context: ./backend # path to dockerfile location
+      dockerfile: Dockerfile
+    ports:
+      - '80:80'
+    volumes:
+      - logs:/app/logs
+      - ./backend:/app
+      - /app/node_modules
+    env_file:
+      - ./env/backend.env
+
+    depends_on:
+      - mongodb
+  frontend:
+    build: ./frontend
+    ports:
+      - '3000:3000'
+    volumes:
+      - ./frontend/src:/app/src
+    stdin_open: true 
+    tty: true
+    depends_on:
+      - backend
+  
+
+volumes:
+  data:
+  logs:
